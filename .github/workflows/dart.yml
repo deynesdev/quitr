@@ -8,8 +8,7 @@ name: Flutter Android Build & Upload
 # Define environment variables for easy modification
 env:
   # The name of your main Flutter project module (usually 'app' for Flutter)
-  MAIN_PROJECT_MODULE: quit
-  # A general descriptor for the build context (e.g., 'GitHub-Release', 'CI-Build')
+  MAIN_PROJECT_MODULE: app
   BUILD_CONTEXT_NAME: GitHub-Release
 
 on:
@@ -48,7 +47,7 @@ jobs:
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2 # Using a dedicated Flutter setup action
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.22.0' # Changed to a specific stable version to resolve the "Unable to determine Flutter version" error
           channel: 'stable' # Or 'beta', 'dev' depending on your needs
           cache: true # Enable caching for Flutter dependencies
 
