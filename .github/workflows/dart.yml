@@ -1,0 +1,111 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Flutter Android Build & Upload
+
+# Define environment variables for easy modification
+env:
+  # The name of your main Flutter project module (usually 'app' for Flutter)
+  MAIN_PROJECT_MODULE: app
+  BUILD_CONTEXT_NAME: GitHub-Release
+
+on:
+  push:
+    branches:
+      - "main"
+      # If you have other development branches you want to trigger builds on, add them here:
+      # - 'develop'
+      # - 'feature/**'
+
+  pull_request:
+    branches:
+      - "main"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Using a Linux runner for building Android artifacts
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4 # Action to check out your repository code
+
+      # Set Current Date As Env Variable for artifact naming
+      - name: Set current date as env variable
+        run: echo "DATE_TODAY=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      # Set Repository Name As Env Variable for artifact naming
+      - name: Set repository name as env variable
+        run: echo "REPOSITORY_NAME=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
+
+      # Setup Flutter SDK
+      # This action sets up Flutter and Dart SDKs
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2 # Using a dedicated Flutter setup action
+        with:
+          flutter-version: '3.32.8' # Changed to a specific stable version to resolve the "Unable to determine Flutter version" error
+          channel: 'stable' # Or 'beta', 'dev' depending on your needs
+          cache: true # Enable caching for Flutter dependencies
+
+      - name: Install Flutter dependencies
+        run: flutter pub get # Get all your project's Dart/Flutter dependencies
+
+      # Optional: Verify formatting (uncomment if you use dart format)
+      # - name: Verify formatting
+      #   run: dart format --output=none --set-exit-if-changed .
+
+      # Analyze project source for potential issues
+      - name: Analyze project source
+        run: flutter analyze # Use flutter analyze for Flutter projects
+
+      # --- Build Android Artifacts ---
+
+      # Build Debug APK
+      - name: Build Debug APK
+        run: flutter build apk --debug
+
+      # Build Release APK
+      # This will build a signed release APK (if you have signing configured)
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      # Build Release App Bundle (AAB)
+      # This is the recommended format for Play Store uploads, but can still be useful for GitHub Releases
+      - name: Build Release App Bundle (AAB)
+        run: flutter build appbundle --release
+
+      # --- Upload Artifacts to GitHub ---
+
+      # Upload Debug APK(s)
+      - name: Upload Debug APK(s) - ${{ env.REPOSITORY_NAME }}
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          # Changed artifact name to be more generic for GitHub-only
+          name: ${{ env.REPOSITORY_NAME }}-${{ env.BUILD_CONTEXT_NAME }}-${{ env.DATE_TODAY }}-debug-APKs
+          path: build/app/outputs/flutter-apk/*.apk # Path to generated debug APKs
+          if-no-files-found: error # Fail if no APKs are found
+          retention-days: 7 # Keep artifacts for 7 days
+
+      # Upload Release APK(s)
+      - name: Upload Release APK(s) - ${{ env.REPOSITORY_NAME }}
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          # Changed artifact name to be more generic for GitHub-only
+          name: ${{ env.REPOSITORY_NAME }}-${{ env.BUILD_CONTEXT_NAME }}-${{ env.DATE_TODAY }}-release-APKs
+          path: build/app/outputs/flutter-apk/*.apk # Path to generated release APKs
+          if-no-files-found: error
+          retention-days: 30 # Keep release artifacts longer
+
+      # Upload Release App Bundle (AAB)
+      - name: Upload AAB (App Bundle) Release - ${{ env.REPOSITORY_NAME }}
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          # Changed artifact name to be more generic for GitHub-only
+          name: ${{ env.REPOSITORY_NAME }}-${{ env.BUILD_CONTEXT_NAME }}-${{ env.DATE_TODAY }}-release-AAB
+          path: build/app/outputs/bundle/release/*.aab # Path to generated AAB
+          if-no-files-found: error
+          retention-days: 90 # Keep AABs for longest retention
