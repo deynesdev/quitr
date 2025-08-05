@@ -30,8 +30,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   DateTime lastRelapseTime = DateTime.now(); // saves the last time you relapsed
-  // This is a placeholder for the last relapse time.
-  // In a real app, you might want to load this from persistent storage.
   double get progress {
     final totalSeconds = 21 * 24 * 60 * 60; // 21 days
     final elapsedSeconds = DateTime.now().difference(lastRelapseTime).inSeconds;
