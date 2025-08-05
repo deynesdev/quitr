@@ -47,7 +47,7 @@ jobs:
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2 # Using a dedicated Flutter setup action
         with:
-          flutter-version: '3.22.0' # Changed to a specific stable version to resolve the "Unable to determine Flutter version" error
+          flutter-version: '3.32.8' # Changed to a specific stable version to resolve the "Unable to determine Flutter version" error
           channel: 'stable' # Or 'beta', 'dev' depending on your needs
           cache: true # Enable caching for Flutter dependencies
 
