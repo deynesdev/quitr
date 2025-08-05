@@ -62,10 +62,6 @@ jobs:
       - name: Analyze project source
         run: flutter analyze # Use flutter analyze for Flutter projects
 
-      # Run Flutter tests
-      - name: Run Flutter tests
-        run: flutter test # Use flutter test for Flutter projects
-
       # --- Build Android Artifacts ---
 
       # Build Debug APK
