@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async'; // Import for Timer
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
