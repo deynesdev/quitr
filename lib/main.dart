@@ -19,17 +19,17 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    loadTheme();
+    _loadTheme();
   }
 
-  Future<void> loadTheme() async {
+  Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isDarkMode = prefs.getBool('isDarkMode') ?? true;
     });
   }
 
-  Future<void> toggleTheme() async {
+  Future<void> _toggleTheme() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isDarkMode = !isDarkMode;
@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> {
       theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
       home: MyHomePage(
         isDarkMode: isDarkMode,
-        toggleTheme: toggleTheme,
+        toggleTheme: _toggleTheme,
       ),
     );
   }
@@ -66,41 +66,38 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   DateTime lastRelapseTime = DateTime.now();
-
-  double get progress {
-    final totalSeconds = 21 * 24 * 60 * 60; // 21 days
-    final elapsedSeconds = DateTime.now().difference(lastRelapseTime).inSeconds;
-    double p = elapsedSeconds / totalSeconds;
-    return p > 1.0 ? 1.0 : p;
-  }
+  late final Stream<DateTime> _timeStream;
 
   @override
   void initState() {
     super.initState();
-    loadLastRelapseTime();
-
-    Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {});
-    });
+    _loadLastRelapseTime();
+    _timeStream =
+        Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
   }
 
-  Future<void> saveLastRelapseTime() async {
+  double _getProgress(DateTime now) {
+    const totalSeconds = 21 * 24 * 60 * 60; // 21 days
+    final elapsedSeconds = now.difference(lastRelapseTime).inSeconds;
+    final p = elapsedSeconds / totalSeconds;
+    return p > 1.0 ? 1.0 : p;
+  }
+
+  Future<void> _saveLastRelapseTime() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('lastRelapseTime', lastRelapseTime.toIso8601String());
   }
 
-  Future<void> loadLastRelapseTime() async {
+  Future<void> _loadLastRelapseTime() async {
     final prefs = await SharedPreferences.getInstance();
     final lastRelapseString = prefs.getString('lastRelapseTime');
     if (lastRelapseString != null) {
-      setState(() {
         lastRelapseTime = DateTime.parse(lastRelapseString);
-      });
     } else {
-      setState(() {
-        lastRelapseTime = DateTime.now();
-      });
+      lastRelapseTime = DateTime.now();
+      await _saveLastRelapseTime();
     }
+    setState(() {});
   }
 
   @override
@@ -109,38 +106,50 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
+          children: [
             SwitchListTile(
               title: const Text('Dark Mode'),
               value: widget.isDarkMode,
-              onChanged: (value) {
-                widget.toggleTheme();
+              onChanged: (_) => widget.toggleTheme(),
+            ),
+            StreamBuilder<DateTime>(
+              stream: _timeStream,
+              builder: (context, snapshot) {
+                final now = snapshot.data ?? DateTime.now();
+                final diff = now.difference(lastRelapseTime);
+
+                return Column(
+                  children: [
+                    SizedBox(
+                      width: 200,
+                      height: 200,
+                      child: CircularProgressIndicator.adaptive(
+                        strokeWidth: 10,
+                        value: _getProgress(now),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Colors.blue,
+                        ),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text(
+                        'You have been clean for:',
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Text(
+                      '${diff.inDays} days, '
+                      '${diff.inHours % 24} hours, '
+                      '${diff.inMinutes % 60} minutes',
+                      style: const TextStyle(fontSize: 20),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                );
               },
-            ),
-            SizedBox(
-              width: 200,
-              height: 200,
-              child: CircularProgressIndicator.adaptive(
-                strokeWidth: 10,
-                value: progress,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text(
-                'You have been clean for:',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            Text(
-              '${DateTime.now().difference(lastRelapseTime).inDays} days, '
-              '${DateTime.now().difference(lastRelapseTime).inHours % 24} hours, '
-              '${DateTime.now().difference(lastRelapseTime).inMinutes % 60} minutes',
-              style: const TextStyle(fontSize: 20),
-              textAlign: TextAlign.center,
             ),
             const Padding(
               padding: EdgeInsets.all(20.0),
@@ -163,14 +172,15 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: const Text('Cancel'),
                       ),
                       TextButton(
-                        onPressed: () {
+                        onPressed: () async {
                           Navigator.of(context).pop();
-                          Future.delayed(const Duration(milliseconds: 100), () {
-                            setState(() {
-                              lastRelapseTime = DateTime.now();
-                              saveLastRelapseTime();
-                            });
-                          });
+                          lastRelapseTime = DateTime.now();
+                          setState(() {});
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('You have relapsed.')),
+                          );
+                          await _saveLastRelapseTime();
                         },
                         child: const Text('I relapsed...'),
                       ),
