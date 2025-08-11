@@ -1,95 +1,134 @@
 import 'package:flutter/material.dart';
-import 'dart:async'; // Import for Timer
+import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool isDarkMode = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadTheme();
+  }
+
+  Future<void> loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isDarkMode = prefs.getBool('isDarkMode') ?? true;
+    });
+  }
+
+  Future<void> toggleTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isDarkMode = !isDarkMode;
+      prefs.setBool('isDarkMode', isDarkMode);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Quit App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue, // Added a basic theme
+      title: 'Quitr',
+      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      home: MyHomePage(
+        isDarkMode: isDarkMode,
+        toggleTheme: toggleTheme,
       ),
-      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  final bool isDarkMode;
+  final VoidCallback toggleTheme;
+
+  const MyHomePage({
+    super.key,
+    required this.isDarkMode,
+    required this.toggleTheme,
+  });
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  DateTime lastRelapseTime = DateTime.now(); // saves the last time you relapsed
+  DateTime lastRelapseTime = DateTime.now();
+
   double get progress {
     final totalSeconds = 21 * 24 * 60 * 60; // 21 days
     final elapsedSeconds = DateTime.now().difference(lastRelapseTime).inSeconds;
     double p = elapsedSeconds / totalSeconds;
-    return p > 1.0 ? 1.0 : p; // cap at 1.0
+    return p > 1.0 ? 1.0 : p;
   }
 
   @override
   void initState() {
     super.initState();
+    loadLastRelapseTime();
 
-    loadLastRelapseTime(); // Load stored time
-
-    Timer.periodic(Duration(seconds: 1), (_) {
-      setState(() {}); // Refresh every second
+    Timer.periodic(const Duration(seconds: 1), (_) {
+      setState(() {});
     });
   }
 
-  void saveLastRelapseTime() async {
+  Future<void> saveLastRelapseTime() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('lastRelapseTime', lastRelapseTime.toIso8601String());
+    await prefs.setString('lastRelapseTime', lastRelapseTime.toIso8601String());
   }
 
-  void loadLastRelapseTime() async {
+  Future<void> loadLastRelapseTime() async {
     final prefs = await SharedPreferences.getInstance();
     final lastRelapseString = prefs.getString('lastRelapseTime');
     if (lastRelapseString != null) {
-      lastRelapseTime = DateTime.parse(lastRelapseString);
+      setState(() {
+        lastRelapseTime = DateTime.parse(lastRelapseString);
+      });
     } else {
-      lastRelapseTime = DateTime.now(); // First run
+      setState(() {
+        lastRelapseTime = DateTime.now();
+      });
     }
-
-    setState(() {}); // Update UI after loading
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        // Wrap the Column in a Center to horizontally center its content
         child: Column(
-          // Column takes a list of children
-          mainAxisAlignment: MainAxisAlignment
-              .center, // Vertically center content within the column
-          crossAxisAlignment: CrossAxisAlignment
-              .center, // Horizontally center content within the column
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            // This is the list of widgets
+            SwitchListTile(
+              title: const Text('Dark Mode'),
+              value: widget.isDarkMode,
+              onChanged: (value) {
+                widget.toggleTheme();
+              },
+            ),
             SizedBox(
-              width: 200, // Set a fixed width for the CircularProgressIndicator
-              height:
-                  200, // Set a fixed height for the CircularProgressIndicator
+              width: 200,
+              height: 200,
               child: CircularProgressIndicator.adaptive(
-                strokeWidth: 10, // Set the width of the progress indicator
-                value: progress, // from 0.0 to 1.0
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                strokeWidth: 10,
+                value: progress,
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
               ),
             ),
             const Padding(
-              padding: EdgeInsets.all(20.0), // Add some padding around the text
+              padding: EdgeInsets.all(20.0),
               child: Text(
                 'You have been clean for:',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -97,12 +136,14 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Text(
-              '${DateTime.now().difference(lastRelapseTime).inDays} days, ${DateTime.now().difference(lastRelapseTime).inHours} hours, ${DateTime.now().difference(lastRelapseTime).inMinutes % 60} minutes',
+              '${DateTime.now().difference(lastRelapseTime).inDays} days, '
+              '${DateTime.now().difference(lastRelapseTime).inHours % 24} hours, '
+              '${DateTime.now().difference(lastRelapseTime).inMinutes % 60} minutes',
               style: const TextStyle(fontSize: 20),
               textAlign: TextAlign.center,
             ),
             const Padding(
-              padding: EdgeInsets.all(20.0), // Add some padding around the text
+              padding: EdgeInsets.all(20.0),
               child: Text(
                 'You are doing great! Keep it up!',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -113,40 +154,28 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('STOP!'),
-                      content: const Text('Are you sure you are?'),
-                      actions: <Widget>[
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(); // Close the dialog
-                          },
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(
-                              context,
-                            ).pop(); // Close the dialog first
-                            // Introduce a small delay to ensure dialog closes before app quits
-                            Future.delayed(
-                              const Duration(milliseconds: 100),
-                              () {
-                                setState(() {
-                                  lastRelapseTime = DateTime.now();
-                                  saveLastRelapseTime();
-
-                                  // This updates the last relapse time to now
-                                });
-                              },
-                            );
-                          },
-                          child: const Text('I relapsed...'),
-                        ),
-                      ],
-                    );
-                  },
+                  builder: (context) => AlertDialog(
+                    title: const Text('STOP!'),
+                    content: const Text('Are you sure you are?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Future.delayed(const Duration(milliseconds: 100), () {
+                            setState(() {
+                              lastRelapseTime = DateTime.now();
+                              saveLastRelapseTime();
+                            });
+                          });
+                        },
+                        child: const Text('I relapsed...'),
+                      ),
+                    ],
+                  ),
                 );
               },
               child: const Text('I AM TEMPTED'),
