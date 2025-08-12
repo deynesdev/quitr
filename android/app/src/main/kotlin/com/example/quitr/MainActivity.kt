@@ -1,4 +1,4 @@
-package com.example.quitr
+package com.deynes.quitr
 
 import io.flutter.embedding.android.FlutterActivity
 
