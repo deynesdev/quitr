@@ -30,7 +30,6 @@ A minimalistic app to help you **quit harmful habits** and complete the **21-Day
 ## Current features
 - 🌓 Dark/Light mode  
 - ⏳ 21-day streak tracker with circular indicator  
-- 💾 Saves theme and streak data after closing the app  
 - ⚡ Lightweight, simple, distraction-free
 
 ---
