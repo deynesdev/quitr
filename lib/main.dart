@@ -100,35 +100,99 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  String formatDuration(Duration diff) {
+    final parts = <String>[];
+    if (diff.inDays > 0) {
+      parts.add('${diff.inDays} days');
+    }
+    if (diff.inHours % 24 > 0) {
+      parts.add('${diff.inHours % 24} hours');
+    }
+    if (diff.inMinutes % 60 > 0) {
+      parts.add('${diff.inMinutes % 60} minutes');
+    }
+    if (diff.inSeconds % 60 > 0) {
+      parts.add('${diff.inSeconds % 60} seconds');
+    }
+    if (parts.isEmpty) {
+      return '0 seconds';
+    }
+    return parts.join(', ');
+  }
+
+  Widget statusMessage(Duration diff) {
+    if (diff.inDays < 0) {
+                  return const Text(
+                    'You have not relapsed yet!',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  );
+                }
+                if (diff.inDays > 21) {
+                  return const Text(
+                    'You have been clean for more than 21 days! Keep it up!',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  );
+                }
+                if (diff.inDays == 0 && diff.inHours == 0 && diff.inMinutes == 0) {
+                  return const Text(
+                    'You just started! Keep going!',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  );
+                }
+                if (diff.inDays == 21) {
+                  return const Text(
+                    'Congratulations! You have been clean for 21 days!',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  );
+                }
+                else {
+                  return const Text(
+                    'You are doing great! Keep it up!',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  );
+                }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: widget.toggleTheme,
+          ),
+        ],
+      ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SwitchListTile(
-              title: const Text('Dark Mode'),
-              value: widget.isDarkMode,
-              onChanged: (_) => widget.toggleTheme(),
-            ),
+            const SizedBox(height: 10),
+            
             StreamBuilder<DateTime>(
               stream: _timeStream,
               builder: (context, snapshot) {
                 final now = snapshot.data ?? DateTime.now();
                 final diff = now.difference(lastRelapseTime);
+                final status = statusMessage(diff);
 
                 return Column(
                   children: [
                     SizedBox(
                       width: 200,
                       height: 200,
-                      child: CircularProgressIndicator.adaptive(
-                        strokeWidth: 10,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 15,
                         value: _getProgress(now),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Colors.blue,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.primary,
                         ),
+                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                       ),
                     ),
                     const Padding(
@@ -141,23 +205,18 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     Text(
-                      '${diff.inDays} days, '
-                      '${diff.inHours % 24} hours, '
-                      '${diff.inMinutes % 60} minutes',
-                      style: const TextStyle(fontSize: 20),
-                      textAlign: TextAlign.center,
+                      formatDuration(diff),
+                      style : const TextStyle(
+                        fontSize: 24,
+                      ),
+                      textAlign: TextAlign.center
                     ),
+                    const SizedBox(height: 20),
+                    status,
+                    const SizedBox(height: 20),
                   ],
                 );
               },
-            ),
-            const Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text(
-                'You are doing great! Keep it up!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
             ),
             ElevatedButton(
               onPressed: () {
