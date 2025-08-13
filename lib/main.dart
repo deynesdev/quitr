@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,14 +40,36 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    return DynamicColorBuilder(
+  builder: (lightDynamic, darkDynamic) {
+    final lightScheme = lightDynamic ?? ColorScheme.fromSeed(
+      seedColor: Colors.red,
+      brightness: Brightness.light,
+    );
+    final darkScheme = darkDynamic ?? ColorScheme.fromSeed(
+      seedColor: Colors.red,
+      brightness: Brightness.dark,
+    );
+
     return MaterialApp(
       title: 'Quitr',
-      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: lightScheme,
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: darkScheme,
+      ),
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: MyHomePage(
         isDarkMode: isDarkMode,
         toggleTheme: _toggleTheme,
       ),
     );
+  },
+);
+
   }
 }
 
@@ -120,47 +143,71 @@ class _MyHomePageState extends State<MyHomePage> {
     return parts.join(', ');
   }
 
-  Widget statusMessage(Duration diff) {
-    if (diff.inDays < 0) {
-                  return const Text(
-                    'You have not relapsed yet!',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  );
-                }
-                if (diff.inDays > 21) {
-                  return const Text(
-                    'You have been clean for more than 21 days! Keep it up!',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  );
-                }
-                if (diff.inDays == 0 && diff.inHours == 0 && diff.inMinutes == 0) {
-                  return const Text(
-                    'You just started! Keep going!',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  );
-                }
-                if (diff.inDays == 21) {
-                  return const Text(
-                    'Congratulations! You have been clean for 21 days!',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  );
-                }
-                else {
-                  return const Text(
-                    'You are doing great! Keep it up!',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  );
-                }
-  }
+Widget tipOfTheDay(Duration diff, BuildContext context) {
+  const tips = [
+    'Remember, every day is a new beginning. Consciously decide to change. You have got this!',
+    'Confess the problem to loved ones or a support group; secrecy empowers addiction.',
+    'Start by eliminating pornography. If cold turkey is too difficult, gradually wean off by using non-pornographic materials (e.g., bikini magazines) until they become boring. Buying more is prohibited.',
+    'Stop using external stimuli for fapping (sounds/images). If you must, do it in the dark, allowing your mind to wander freely.',
+    'Fill your schedule with other activities and tasks to avoid idle time that could lead to the habit.',
+    'Spend time around people, even working in public places like a library or cafe.',
+    'Write down your reasons for quitting and revisit them often. Remind yourself of them when temptations arise.',
+    'Develop new interests – learn to code, play an instrument, start a business, learn languages, or find new social hobbies like pottery or parkour.',
+    'Exercise regularly and vigorously to boost your mood, energy, and overall well-being. Work out to the point of exhaustion to leave no energy for fapping.',
+    'Address your mental health. Addiction is often a symptom of deeper issues like loneliness or a poor mental state.',
+    'Practice mindfulness and meditation to control urges and regain clarity of thought.',
+    'Identify and avoid triggers that make you want to relapse.',
+    'If quitting cold turkey is too difficult, consider gradually reducing frequency, for example, by setting a structured schedule for yourself.',
+    'Use a calendar (physical or digital) to track your progress and plan your "clean" days.',
+    'If you experience a relapse, **do not feel guilty**. Learn from what went wrong, understand the triggers, and recommit to your plan.',
+    'Start confronting your shame and social fears. Write down lists of everything that has made you feel shame in your life.',
+    'Forgive yourself and others for past mistakes. Your future is more important than dwelling on the past.',
+    'Actively overcome your social fears (e.g., public speaking, interacting with new people) to build internal strength and control.',
+    'Focus on building a meaningful life. True freedom from the habit often comes when your life feels purposeful and has direction.',
+    'Cultivate inner strength and self-discipline, rather than relying solely on external structures or avoiding temptations.',
+    'Be aware of the potential physical and psychological effects of excessive fapping, such as erectile dysfunction, brain fog, low energy levels, or even physical pain.',
+    'You have successfully finished the challenge! Stay hydrated and maintain a healthy diet; this supports your overall well-being, energy levels, and mental clarity.',
+  ];
+
+  final index = diff.inDays % tips.length;
+
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Text(
+              'Day ${diff.inDays}',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            tips[index],
+            style: TextStyle(
+              fontSize: 15,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
+                final screenWidth = MediaQuery.of(context).size.width;
+                final horizontalPadding = screenWidth * 0.05;
     return Scaffold(
+      
       appBar: AppBar(
         actions: [
           IconButton(
@@ -179,7 +226,6 @@ class _MyHomePageState extends State<MyHomePage> {
               builder: (context, snapshot) {
                 final now = snapshot.data ?? DateTime.now();
                 final diff = now.difference(lastRelapseTime);
-                final status = statusMessage(diff);
 
                 return Column(
                   children: [
@@ -211,9 +257,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       textAlign: TextAlign.center
                     ),
-                    const SizedBox(height: 20),
-                    status,
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                   ],
                 );
               },
@@ -249,6 +293,41 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text('I AM TEMPTED'),
             ),
+            const SizedBox(height: 20),
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).colorScheme.shadow,
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+
+            Padding(
+  padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12),
+  child: Container(
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(8),
+      boxShadow: [
+        BoxShadow(
+          color: Theme.of(context).colorScheme.shadow,
+          blurRadius: 10,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: tipOfTheDay(
+      DateTime.now().difference(lastRelapseTime),
+      context,
+    ),
+  ),
+),
           ],
         ),
       ),
