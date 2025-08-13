@@ -314,13 +314,6 @@ Widget tipOfTheDay(Duration diff, BuildContext context) {
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       borderRadius: BorderRadius.circular(8),
-      boxShadow: [
-        BoxShadow(
-          color: Theme.of(context).colorScheme.shadow,
-          blurRadius: 10,
-          offset: const Offset(0, 2),
-        ),
-      ],
     ),
     child: tipOfTheDay(
       DateTime.now().difference(lastRelapseTime),
