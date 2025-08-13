@@ -17,29 +17,3 @@ A minimalistic app to help you **quit harmful habits** and complete the **21-Day
 3. Track your progress with the streak timer and stay motivated
 
 ---
-
-## Screenshots
-
-#### Android
-
-| <img src="screenshots/scr-android-dark.png?raw=true" width="200"/> | <img src="screenshots/scr-android-light.png?raw=true" width="200"/> |
-| :--: | :--: |
-| Dark Mode | Light Mode |
-
----
-
-## Current features
-- 🌓 Dark/Light mode  
-- ⏳ 21-day streak tracker with circular indicator  
-- ⚡ Lightweight, simple, distraction-free
-
----
-
-## Planned features
-- 🧠 Daily motivational quotes about how harmful content affects your mind, body, and social life  
-- 📅 Day-specific advice depending on your streak progress  
-- ⏱ Timer inside the circular progress indicator showing days, hours, minutes, and seconds  
-- 🎨 Material 3–styled progress bar with a full white background ring  
-- 🔠 Large “Q” or *waffles* title with **21 Day Challenge** subtitle  
-- 📊 Percentage tracker above the progress ring  
-- ⚙ Settings subpanel for theme toggle and other preferences
