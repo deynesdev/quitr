@@ -52,7 +52,7 @@ class _MyAppState extends State<MyApp> {
     );
 
     return MaterialApp(
-      title: 'Quitr',
+      title: 'waffles',
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: lightScheme,

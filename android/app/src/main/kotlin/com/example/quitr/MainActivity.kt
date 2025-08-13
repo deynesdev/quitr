@@ -1,4 +1,4 @@
-package com.deynes.quitr
+package com.deynes.waffles
 
 import io.flutter.embedding.android.FlutterActivity
 
