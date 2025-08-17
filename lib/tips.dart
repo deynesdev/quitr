@@ -1,5 +1,5 @@
 const List<String> tips = [
-  'Remember, every day is a new beginning. Consciously decide to change. You have got this!',
+  'Remember, every day is a new beginning. Consciously decide to change. You\'ve got this!',
   'Confess the problem to loved ones or a support group; secrecy empowers addiction.',
   'Start by eliminating pornography. If cold turkey is too difficult, gradually wean off by using non-pornographic materials (e.g., bikini magazines) until they become boring. Buying more is prohibited.',
   'Stop using external stimuli for fapping (sounds/images). If you must, do it in the dark, allowing your mind to wander freely.',
@@ -13,7 +13,7 @@ const List<String> tips = [
   'Identify and avoid triggers that make you want to relapse.',
   'If quitting cold turkey is too difficult, consider gradually reducing frequency, for example, by setting a structured schedule for yourself.',
   'Use a calendar (physical or digital) to track your progress and plan your "clean" days.',
-  'If you experience a relapse, **do not feel guilty**. Learn from what went wrong, understand the triggers, and recommit to your plan.',
+  'If you experience a relapse, do not feel guilty. Learn from what went wrong, understand the triggers, and recommit to your plan.',
   'Start confronting your shame and social fears. Write down lists of everything that has made you feel shame in your life.',
   'Forgive yourself and others for past mistakes. Your future is more important than dwelling on the past.',
   'Actively overcome your social fears (e.g., public speaking, interacting with new people) to build internal strength and control.',
