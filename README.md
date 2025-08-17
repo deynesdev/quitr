@@ -1,6 +1,6 @@
 # waffles
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/deynesdev/waffles)](https://github.com/deynesdev/waffles/releases/latest/) [![GitHub all releases](https://img.shields.io/github/downloads/deynesdev/waffles/total?label=All%20Downloads)](https://github.com/deynesdev/waffles/releases/latest/) [![Made with Flutter](https://img.shields.io/badge/Made%20with-Flutter-blue?logo=flutter&logoColor=white)](https://flutter.dev)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/deynesdev/waffles)](https://github.com/deynesdev/waffles/releases/latest/) [![GitHub all releases](https://img.shields.io/github/downloads/deynesdev/waffles/total?label=All%20Downloads)](https://github.com/deynesdev/waffles/releases/latest/)
 
 A minimalistic app to help you **quit your porn addiction** and complete the **21-Day Challenge**.
 
